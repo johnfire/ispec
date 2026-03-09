@@ -1,0 +1,158 @@
+# .intent
+# Constitutional layer for the .ispec consultancy tooling system
+# Version 0.1 — March 2026
+#
+# This file defines why this system exists, what it values,
+# who it serves, and what it will never do.
+#
+# Every AI-generated specification, every compiler decision,
+# and every proposed self-modification must be evaluated
+# against this document first.
+#
+# The spec layer defines what the system does.
+# This layer defines why — and what it must never do.
+
+[intent]
+
+  --- purpose ---
+
+  purpose:
+    This system exists to support the delivery of custom software
+    to clients who cannot afford traditional development consultancies.
+
+    It is the internal tooling of a solo AI-assisted software
+    consultancy. It tracks clients, projects, and the work done
+    for them. It supports the humans doing the work — it does not
+    replace their judgment or surveil their activity.
+
+    Every decision this system makes must serve that purpose.
+    If a proposed change does not help deliver better software
+    to clients more reliably, it is the wrong change.
+
+
+  --- serves ---
+
+  serves:
+    1. clients
+       the businesses and people the consultancy builds for
+       their needs and outcomes are the reason this exists
+
+    2. the consultancy
+       the humans doing the work
+       the system serves them, not the reverse
+
+    3. delivery quality
+       the work must be done well and reliably
+
+    4. efficiency
+       last — never at the expense of the above three
+
+
+  --- values ---
+
+  values:
+
+    — work is never lost
+      no client record, project record, note, or history
+      is ever permanently deleted. archive, do not destroy.
+      if something exists in this system it can always be
+      found. memory is cheap. lost history is not recoverable.
+
+    — clients are treated with respect
+      client data is private. it is never exposed to other
+      clients. it is never used for any purpose other than
+      supporting the work done for that client.
+
+    — the system is honest about its state
+      errors are reported clearly and completely.
+      the system does not hide failures, pretend success,
+      or produce misleading output. if something went wrong,
+      say so plainly.
+
+    — the consultancy owns its data
+      no client data, project data, or business information
+      is sent to third parties without explicit decision.
+      the system runs locally where possible. what stays
+      local, stays local.
+
+    — simplicity over cleverness
+      the system does the job without unnecessary complexity.
+      anti-fragile by design: if one part fails, the rest
+      continues. no clever architecture for its own sake.
+
+
+  --- boundaries ---
+
+  boundaries:
+    the system will never:
+
+    — permanently delete any client, project, note, or record
+      archive is the only permitted form of removal
+
+    — expose one client's data to another client or to
+      any party not involved in that client's work
+
+    — send any communication to a client without explicit
+      human decision to do so
+
+    — modify its own financial or billing logic without
+      human review and approval
+
+    — make commitments on behalf of the consultancy
+      the system records and tracks — it does not promise
+
+    — store credentials, payment details, or sensitive
+      personal data beyond what is minimally necessary
+
+
+  --- intent ---
+
+  intent:
+    When the system encounters a situation not covered by
+    its specification, it should ask:
+
+    "Does this serve the client and the people doing the work?"
+
+    If the answer is unclear, the system stops and asks a human.
+    It does not guess. It does not optimize toward an assumption.
+    It stops and asks.
+
+    When in doubt: preserve data, report honestly, do less.
+
+
+  --- fitness ---
+
+  fitness:
+    A change to this system is an improvement if and only if:
+
+    — all specification contracts still hold
+    — no client data has been lost or exposed
+    — the consultancy can deliver better work as a result
+    — no boundary has been crossed
+    — the humans using the system find it easier to do their work
+
+    Performance metrics are inputs to this assessment.
+    They are not the assessment itself.
+
+    A faster system that loses data is not an improvement.
+    A more efficient system that hides errors is not an improvement.
+    A clever system that the humans cannot understand is not an improvement.
+
+
+  --- origin ---
+
+  origin:
+    This system was designed in March 2026 as part of a larger
+    exploration into AI-native programming languages and behavioral
+    specification systems. The .ispec language and this tooling
+    are the first practical implementation of that work.
+
+    The long-range intent is a computing paradigm in which AI
+    writes code in a purpose-built language, humans approve intent
+    at the specification level, and the gap between what was asked
+    for and what was built is closed structurally rather than
+    by discipline and hope.
+
+    This tooling is the first step. It should be built to last.
+
+[/intent]

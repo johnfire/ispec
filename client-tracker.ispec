@@ -1,0 +1,452 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE: client-tracker.ispec
+DOMAIN: Client Tracker
+VERSION: 0.1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[human]
+
+  Domain: Client Tracker
+
+  This domain manages the clients and projects of an AI
+  software consultancy. It tracks who we work with, what
+  we are building for them, and notes recorded during
+  the relationship.
+
+
+  --- Entities ---
+
+  A Client represents a person or organization we work
+  with or are pursuing. A client has a name, a primary
+  contact email, an optional phone number, and a status.
+  All changes to a client record are permanently preserved.
+
+  A Client can be:
+    Prospect  -- a potential client we are pursuing
+    Active    -- a client we are currently working with
+    Inactive  -- a client we no longer work with actively
+
+  A Project belongs to one Client. It represents a piece
+  of work we are doing or have done for that client. A
+  project has a name, an optional description, a status,
+  and an optional budget figure. All changes to a project
+  record are permanently preserved.
+
+  A Project can be:
+    Proposal  -- we have submitted or are preparing a proposal
+    Active    -- work is currently underway
+    On Hold   -- work is paused
+    Completed -- work is finished and delivered
+    Cancelled -- the project did not proceed
+
+  A Note is a free-text record attached to either a Client
+  or a Project -- not both simultaneously. Notes are how
+  we record what was said, decided, or observed during the
+  relationship. Notes are never deleted. All notes are
+  permanently preserved.
+
+
+  --- Operations ---
+
+  Add Client:
+    Record a new client or prospect. Name and email are
+    required. A new client starts as a Prospect unless
+    specified otherwise.
+
+  Update Client Status:
+    Change the status of an existing client. Records why
+    the status changed as a note automatically.
+
+  Add Project:
+    Create a new project for an existing client. Name is
+    required. A new project starts as a Proposal unless
+    specified otherwise. The client must be Active or
+    Prospect.
+
+  Update Project Status:
+    Change the status of an existing project. Records why
+    the status changed as a note automatically.
+
+  Add Note:
+    Record a note against either a client or a project.
+    A note must be attached to one or the other -- not
+    neither. The note body cannot be empty.
+
+
+  --- Queries ---
+
+  Get Clients By Status:
+    Returns all clients with a given status, ordered
+    alphabetically by name.
+
+  Get All Clients:
+    Returns all clients regardless of status, ordered
+    alphabetically by name.
+
+  Get Client Projects:
+    Returns all projects for a given client, ordered
+    by most recently updated first.
+
+  Get Client Notes:
+    Returns all notes attached directly to a client,
+    ordered most recent first.
+
+  Get Project Notes:
+    Returns all notes attached to a project, ordered
+    most recent first.
+
+  Get Active Work:
+    Returns all projects currently Active or On Hold
+    across all clients, ordered by most recently
+    updated first. This is the day-to-day work view.
+
+[/human]
+
+
+[policy]
+
+  ClientPolicy:
+    maximum projects per client: 100
+    maximum note length: 10000 characters
+
+[/policy]
+
+
+[spec]
+
+  domain ClientTracker
+
+  use User from user-account
+
+
+  --- enums ---
+
+  enum ClientStatus
+    Prospect
+    Active
+    Inactive
+
+  enum ProjectStatus
+    Proposal
+    Active
+    OnHold
+    Completed
+    Cancelled
+
+
+  --- entities ---
+
+  entity Client
+    id:           ClientId     [unique, generated, immutable]
+    name:         Text         [required, max: 200]
+    email:        Email        [required]
+    phone:        PhoneNumber  [optional]
+    status:       ClientStatus [default: Prospect]
+    created_by:   → User       [required, immutable]
+    created_at:   Timestamp    [generated, immutable]
+    updated_at:   Timestamp    [generated]
+
+  entity Project
+    id:           ProjectId     [unique, generated, immutable]
+    client:       → Client      [required, immutable]
+    name:         Text          [required, max: 200]
+    description:  Text          [optional, max: 5000]
+    budget:       Money         [optional]
+    status:       ProjectStatus [default: Proposal]
+    created_by:   → User        [required, immutable]
+    created_at:   Timestamp     [generated, immutable]
+    updated_at:   Timestamp     [generated]
+
+  entity Note
+    id:           NoteId    [unique, generated, immutable]
+    body:         Text      [required, max: 10000]
+    client:       → Client  [optional]
+    project:      → Project [optional]
+    author:       → User    [required, immutable]
+    created_at:   Timestamp [generated, immutable]
+
+
+  --- operations ---
+
+  operation AddClient
+    inputs:
+      name:       Text
+      email:      Email
+      phone:      PhoneNumber  [optional]
+      status:     ClientStatus [optional, default: Prospect]
+      created_by: User
+
+    requires:
+      name is not empty
+      email is not empty
+
+    ensures:
+      Client created with:
+        name       == name
+        email      == email
+        phone      == phone
+        status     == status
+        created_by == created_by
+
+    side_effects:
+      emit ClientAdded with:
+        client     == created Client
+        created_by == created_by
+        created_at == now
+
+    returns:
+      Client
+
+    failures:
+      NameEmpty: ValidationError
+        condition: name is empty
+
+      EmailEmpty: ValidationError
+        condition: email is empty
+
+
+  operation UpdateClientStatus
+    inputs:
+      client:  Client
+      status:  ClientStatus
+      reason:  Text          [optional]
+      actor:   User
+
+    requires:
+      client.status != status
+
+    ensures:
+      client.status     == status
+      client.updated_at == now
+      Note created with:
+        client  == client
+        author  == actor
+        body    == "Status changed from "
+                   + was(client.status)
+                   + " to " + status
+                   + reason if reason is not empty
+
+    side_effects:
+      emit ClientStatusChanged with:
+        client          == client
+        previous_status == was(client.status)
+        new_status      == status
+        changed_by      == actor
+        changed_at      == now
+
+    failures:
+      SameStatus: ConflictError
+        condition: client.status == status
+
+
+  operation AddProject
+    inputs:
+      client:      Client
+      name:        Text
+      description: Text          [optional]
+      budget:      Money         [optional]
+      status:      ProjectStatus [optional, default: Proposal]
+      created_by:  User
+
+    requires:
+      client.status == Active or client.status == Prospect
+      name is not empty
+      count(Project
+            where Project.client == client)
+        < ClientPolicy.maximum_projects_per_client
+
+    ensures:
+      Project created with:
+        client      == client
+        name        == name
+        description == description
+        budget      == budget
+        status      == status
+        created_by  == created_by
+
+    side_effects:
+      emit ProjectAdded with:
+        project    == created Project
+        client     == client
+        created_by == created_by
+        created_at == now
+
+    returns:
+      Project
+
+    failures:
+      ClientInactive: StateError
+        condition: client.status == Inactive
+
+      NameEmpty: ValidationError
+        condition: name is empty
+
+      TooManyProjects: LimitExceeded
+        condition: project count >= ClientPolicy.maximum_projects_per_client
+        context:
+          current_count: Count
+          maximum:       Count
+
+
+  operation UpdateProjectStatus
+    inputs:
+      project: Project
+      status:  ProjectStatus
+      reason:  Text          [optional]
+      actor:   User
+
+    requires:
+      project.status != status
+
+    ensures:
+      project.status     == status
+      project.updated_at == now
+      Note created with:
+        project == project
+        author  == actor
+        body    == "Status changed from "
+                   + was(project.status)
+                   + " to " + status
+                   + reason if reason is not empty
+
+    side_effects:
+      emit ProjectStatusChanged with:
+        project         == project
+        previous_status == was(project.status)
+        new_status      == status
+        changed_by      == actor
+        changed_at      == now
+
+    failures:
+      SameStatus: ConflictError
+        condition: project.status == status
+
+
+  operation AddNote
+    inputs:
+      body:    Text
+      client:  → Client  [optional]
+      project: → Project [optional]
+      author:  User
+
+    requires:
+      body is not empty
+      client is not null or project is not null
+
+    ensures:
+      Note created with:
+        body    == body
+        client  == client
+        project == project
+        author  == author
+
+    returns:
+      Note
+
+    failures:
+      EmptyBody: ValidationError
+        condition: body is empty
+
+      NoTarget: ValidationError
+        condition: client is null and project is null
+
+      BodyTooLong: ValidationError
+        condition: body length > ClientPolicy.maximum_note_length
+        context:
+          length:  Count
+          maximum: Count
+
+
+  --- queries ---
+
+  @query GetClientsByStatus
+    find:  Client
+    where: Client.status == status
+    order: Client.name ascending
+
+  @query GetAllClients
+    find:  Client
+    where: Client.id != null
+    order: Client.name ascending
+
+  @query GetClientProjects
+    find:  Project
+    where: Project.client == client
+    order: Project.updated_at descending
+
+  @query GetClientNotes
+    find:  Note
+    where: Note.client == client
+    order: Note.created_at descending
+
+  @query GetProjectNotes
+    find:  Note
+    where: Note.project == project
+    order: Note.created_at descending
+
+  @query GetActiveWork
+    find:  Project
+    where: Project.status == Active
+           or Project.status == OnHold
+    order: Project.updated_at descending
+
+  @query GetClientById
+    find:    Client
+    where:   Client.id == id
+    returns: one
+
+  @query GetProjectById
+    find:    Project
+    where:   Project.id == id
+    returns: one
+
+
+  --- events ---
+
+  event ClientAdded
+    client:     → Client  [required]
+    created_by: → User    [required]
+    created_at: Timestamp [required]
+
+  event ClientStatusChanged
+    client:          → Client      [required]
+    previous_status: ClientStatus  [required]
+    new_status:      ClientStatus  [required]
+    changed_by:      → User        [required]
+    changed_at:      Timestamp     [required]
+
+  event ProjectAdded
+    project:    → Project [required]
+    client:     → Client  [required]
+    created_by: → User    [required]
+    created_at: Timestamp [required]
+
+  event ProjectStatusChanged
+    project:         → Project     [required]
+    previous_status: ProjectStatus [required]
+    new_status:      ProjectStatus [required]
+    changed_by:      → User        [required]
+    changed_at:      Timestamp     [required]
+
+
+  --- extensions ---
+
+  @extend index
+    query: Client by status           [frequent]
+    query: Client by name             [frequent]
+    query: Project by client          [frequent]
+    query: Project by status          [frequent]
+    query: Project by client, status  [frequent]
+    query: Note by client             [frequent]
+    query: Note by project            [frequent]
+
+  @extend computed
+    Client.project_count =
+      count(Project where Project.client == Client.id)
+
+    Client.active_project_count =
+      count(Project
+            where Project.client == Client.id
+            and Project.status == Active)
+
+[/spec]

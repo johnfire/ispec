@@ -1,0 +1,103 @@
+# global.policy
+# System-wide rules for the .ispec consultancy tooling
+# Version 0.1 — March 2026
+#
+# These rules apply across all domains unless explicitly
+# overridden in a domain-level [policy] section.
+# Domain policies take precedence over global policies
+# where they conflict.
+
+[global.policy]
+
+  --- error hierarchy ---
+
+  errors:
+
+    SystemError
+      # Infrastructure problems. Always transient. Always retriable.
+      # The system failed, not the caller.
+      DatabaseError       transient, retriable
+      NetworkError        transient, retriable
+      TimeoutError        transient, retriable
+      ServiceUnavailable  transient, retriable
+
+    ClientError
+      # The caller did something wrong. Never retriable without
+      # changing the input. Retrying the same bad request
+      # produces the same bad result.
+      ValidationError       # bad input format or value
+      AuthorizationError    # not permitted to do this
+      NotFoundError         # the thing does not exist
+      ConflictError         # current state prevents this action
+
+    BusinessError
+      # A business rule prevented the action. The system is
+      # working correctly. Something must change before retrying.
+      PolicyViolation       # an explicit rule was violated
+      LimitExceeded         # a cap or quota was reached
+      StateError            # the entity is in the wrong state
+
+
+  --- retry policy ---
+
+  RetryPolicy:
+    maximum attempts:  3
+    backoff:           exponential
+    initial delay:     1 second
+    maximum delay:     30 seconds
+    # applies to: all SystemError subtypes by default
+    # individual failures may override retriable and retry_after
+
+
+  --- pagination ---
+
+  PaginationPolicy:
+    default page size:  20
+    maximum page size:  100
+
+
+  --- data ---
+
+  DataPolicy:
+    default history:    immutable
+    # all entities are append-only unless explicitly marked
+    # history: transient in the entity definition
+    #
+    # transient is appropriate for:
+    #   session tokens, rate limit counters,
+    #   cache entries, temporary queues,
+    #   presence indicators
+
+
+  --- event delivery ---
+
+  EventPolicy:
+    default delivery:   at_least_once
+    # at_least_once  -- may arrive more than once
+    #                   handler must be idempotent
+    #                   use for: emails, notifications, logging
+    #
+    # exactly_once   -- guaranteed single delivery
+    #                   use for: payments, inventory, billing
+    #
+    # at_most_once   -- may be lost, never duplicated
+    #                   use for: analytics, telemetry
+
+
+  --- notes ---
+
+  NotePolicy:
+    maximum length:     10000 characters
+    # notes are always immutable
+    # notes are never deleted
+    # notes attach to one entity only
+
+
+  --- audit ---
+
+  AuditPolicy:
+    # all status changes generate an automatic note
+    # all operations are logged with actor and timestamp
+    # audit records are immutable and permanent
+
+[/global.policy]
