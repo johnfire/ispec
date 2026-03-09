@@ -3,6 +3,11 @@
 > *Write what your software does. AI writes the code. Humans approve the contract.*
 
 ---
+Copyright 2026, all rights reserved. you can use this tool to create commerical code or anything else but you cannot sell it to others, or fork it and sell it, without my written permission.free sharing is certainly allowed, and encouraged! 
+
+if you wish to support this project help out! help build it or help me buy food to eat!
+
+[paypalme/christopherrehm001](https://paypal.me/christopherrehm001)
 
 ## What This Is
 
