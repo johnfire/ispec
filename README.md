@@ -23,7 +23,7 @@ This solves a problem that has existed since the beginning of software: **docume
 
 ## The Core Idea
 
-Note: Zo me it should be self evident but you need to carefully describe what you want to the AI and ask it to ask you clarifying questions, once the AI has determined it has enough info THEN you can ask it to generate the .ispec document, you check it, and THEN you can instruct it to make changes. AI is AI its not a mind reader. The less ambiguity in your instructions and description of what you want, what the problem you are trying to solve is, etc, the better. 
+Note: To me it should be self evident but you need to carefully describe what you want to the AI and ask it to ask you clarifying questions, once the AI has determined it has enough info THEN you can ask it to generate the .ispec document, you check it, and THEN you can instruct it to make changes. AI is AI its not a mind reader. The less ambiguity in your instructions and description of what you want, what the problem you are trying to solve is, etc, the better. 
 
 ```
 Human describes intent
