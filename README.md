@@ -120,16 +120,22 @@ Running system
 
 ```
 .
-├── README.md                         ← this file
-├── ispec-language-spec.md            ← full language specification
-├── ai-guided-workflow.md             ← how AI guides you through the process
-├── reverse-engineering-workflow.md   ← workflow: code → .ispec
-├── testing-strategy.md               ← what to test, why, and when
-├── testing-setup-guide.md            ← how to set up testing (Python/pytest)
-├── .intent                           ← system constitution
-├── global.policy                     ← system-wide error hierarchy and rules
-└── specs/
-    └── client-tracker.ispec          ← example: consultancy client tracker
+├── README.md                              ← this file
+├── CODE_OF_CONDUCT.md                     ← community standards
+│
+├── ispec system/                          ← the core framework
+│   ├── ispec-language-spec.md             ← full language specification
+│   ├── ai-guided-workflow.md              ← AI guides you through the process
+│   ├── testing-strategy.md                ← what to test, why, and when
+│   ├── testing-setup-guide.md             ← how to set up testing (Python/pytest)
+│   ├── global.policy                      ← system-wide error hierarchy and rules
+│   └── intent.example                     ← template for your .intent file
+│
+├── reverse ispec system/                  ← going the other direction
+│   └── reverse-engineering-workflow.md    ← workflow: existing code → .ispec
+│
+└── examples/                              ← real .ispec files to learn from
+    └── client-tracker.ispec               ← consultancy client tracker
 ```
 
 ---
@@ -137,30 +143,30 @@ Running system
 ## Quick Start
 
 ### 1. Let the AI guide you
-Start with `ai-guided-workflow.md`. The AI runs a structured discovery process with you.
-You answer questions. The AI generates documents. You approve at each gate.
-Nothing proceeds without your approval.
+Start with `ispec system/ai-guided-workflow.md`. The AI runs a structured
+discovery process with you. You answer questions. The AI generates documents.
+You approve at each gate. Nothing proceeds without your approval.
 
 ### 2. Read the language spec
-`ispec-language-spec.md` covers every construct with examples.
+`ispec system/ispec-language-spec.md` covers every construct with examples.
 Read it to understand what the AI is generating on your behalf.
 
 ### 3. Look at a real example
-`specs/client-tracker.ispec` shows a complete domain in both the human view
-and the formal spec view.
+`examples/client-tracker.ispec` shows a complete domain in both the human
+view and the formal spec view.
 
 ### 4. Generate code from a spec
 ```
-Read ispec-language-spec.md for the language rules.
-Read specs/client-tracker.ispec for the specification.
+Read "ispec system/ispec-language-spec.md" for the language rules.
+Read "examples/client-tracker.ispec" for the specification.
 Generate Python from the [spec] section.
 Output to generated/python/client_tracker.py
 ```
 
 ### 5. Reverse engineer existing code
 ```
-Read ispec-language-spec.md for the language rules.
-Read reverse-engineering-workflow.md for the process.
+Read "ispec system/ispec-language-spec.md" for the language rules.
+Read "reverse ispec system/reverse-engineering-workflow.md" for the process.
 Reverse engineer [your code path] into an .ispec file.
 ```
 
@@ -177,8 +183,8 @@ each approved before the next is created.
 | `.intent` | 0 — Constitution | Purpose, values, what the system will never do |
 | `context.md` | 1 — Context | The problem being solved and why |
 | `arch.md` | 1 — Architecture | Structural decisions and the reasons behind them |
-| `global.policy` | 2 — Rules | System-wide error hierarchy and operational rules |
-| `domain.ispec` | 2 — Specification | Behavioral spec per domain |
+| `ispec system/global.policy` | 2 — Rules | System-wide error hierarchy and operational rules |
+| `specs/domain.ispec` | 2 — Specification | Behavioral spec per domain |
 | `phases.md` | 3 — Build plan | Phased delivery with test gates |
 | `module/domain.md` | 4 — Interface | Token-budget-aware module contracts |
 
@@ -186,6 +192,8 @@ The AI generates all of these through guided conversation.
 Humans approve each document before the next one is generated.
 Nothing is built until the specification is approved.
 Nothing proceeds to the next phase until the current phase test gate passes.
+
+See `ispec system/intent.example` for a template to start your own `.intent` file.
 
 ---
 
