@@ -122,8 +122,10 @@ Running system
 .
 ├── README.md                         ← this file
 ├── ispec-language-spec.md            ← full language specification
-├── reverse-engineering-workflow.md   ← workflow: code → .ispec
 ├── ai-guided-workflow.md             ← how AI guides you through the process
+├── reverse-engineering-workflow.md   ← workflow: code → .ispec
+├── testing-strategy.md               ← what to test, why, and when
+├── testing-setup-guide.md            ← how to set up testing (Python/pytest)
 ├── .intent                           ← system constitution
 ├── global.policy                     ← system-wide error hierarchy and rules
 └── specs/
